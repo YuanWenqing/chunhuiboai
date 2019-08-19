@@ -1,6 +1,8 @@
 # 环境准备
 
-`python3`
+安装`python3`
+
+***只需要安装一次！***
 
 ## Mac
 
@@ -15,6 +17,8 @@ brew install python3
 参考：https://www.jianshu.com/p/7a0b52075f70
 
 # 执行统计脚本
+
+***每次需要统计时进行这一步***
 
 ## 命令行
 
@@ -35,6 +39,8 @@ python3 /path/to/stat-chba.py /path/to/6月
 将 `stat-chba.py` 拷贝到相应目录中，然后双击执行
 
 # 输入和输出
+
+这里对输入和输出进行一下说明
 
 ## 输入
 
