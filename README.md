@@ -18,22 +18,16 @@ brew install python3
 
 ## 命令行
 
-进入到`stat-chba.py`所在目录下
-
-~~~shell
-cd /path/to/stat-chba.py
-~~~
-
-然后执行
+执行
 
 ~~~python
-python3 stat-chba.py /path/to/month-data-directory
+python3 /path/to/stat-chba.py /path/to/month-data-directory
 ~~~
 
 比如
 
 ~~~python
-python3 stat-chba.py /path/to/6月
+python3 /path/to/stat-chba.py /path/to/6月
 ~~~
 
 ## 从每月数据的目录下启动（Windows）
