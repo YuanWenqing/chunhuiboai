@@ -2,9 +2,9 @@
 
 `python3`
 
-## mac
+## Mac
 
-执行命令行：
+在应用中找到Terminal（或终端）并打开命令行工具，执行命令：
 
 ~~~shell
 brew install python3
@@ -17,6 +17,14 @@ brew install python3
 # 执行统计脚本
 
 ## 命令行
+
+进入到`stat-chba.py`所在目录下
+
+~~~shell
+cd /path/to/stat-chba.py
+~~~
+
+然后执行
 
 ~~~python
 python3 stat-chba.py /path/to/month-data-directory
