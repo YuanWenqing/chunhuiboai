@@ -131,7 +131,7 @@ for t in transactions:
 print("> output: ")
 outdir = os.path.join(indir, outname)
 if not os.path.exists(outdir):
-    os.makedirs(outdir, exist_ok=True)
+    os.makedirs(outdir)
 
 outf = os.path.join(outdir, 'months.csv')
 print("* write to %s" % outf)
