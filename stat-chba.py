@@ -60,7 +60,7 @@ def read_details(csvfile):
     transactions = []
     sepline = False
     begline = False
-    for line in open(csvfile, encoding='gbk'):
+    for line in file(csvfile):
         if not sepline:
             if '#----------' in line:
                 sepline = True
@@ -135,7 +135,7 @@ if not os.path.exists(outdir):
 
 outf = os.path.join(outdir, 'months.csv')
 print("* write to %s" % outf)
-with open(outf, 'w', encoding='gbk') as writer:
+with file(outf, mode='w') as writer:
     writer.write("month,persons,transactions,amount\n")
     keys = list(months.keys())
     keys.sort()
@@ -145,7 +145,7 @@ with open(outf, 'w', encoding='gbk') as writer:
 
 outf = os.path.join(outdir, 'dates.csv')
 print("* write to %s" % outf)
-with open(outf, 'w', encoding='gbk') as writer:
+with file(outf, mode='w') as writer:
     writer.write("date,persons,transactions,amount\n")
     keys = list(dates.keys())
     keys.sort()
@@ -155,7 +155,7 @@ with open(outf, 'w', encoding='gbk') as writer:
 
 outf = os.path.join(outdir, 'persons.csv')
 print("* write to %s" % outf)
-with open(outf, 'w', encoding='gbk') as writer:
+with file(outf, mode='w') as writer:
     writer.write("person,month,transactions,amount\n")
     keys = list(persons.keys())
     keys.sort()

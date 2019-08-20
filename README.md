@@ -1,20 +1,16 @@
 # 环境准备
 
-安装`python3`
+安装`python2`
 
 ***只需要安装一次！***
 
 ## Mac
 
-在应用中找到Terminal（或终端）并打开命令行工具，执行命令：
-
-~~~shell
-brew install python3
-~~~
+自带python2，无需安装
 
 ## Windows
 
-参考：https://www.jianshu.com/p/7a0b52075f70
+参考：https://www.jianshu.com/p/edf7679d4aab
 
 # 执行统计脚本
 
@@ -25,13 +21,13 @@ brew install python3
 执行
 
 ~~~python
-python3 /path/to/stat-chba.py /path/to/month-data-directory
+python /path/to/stat-chba.py /path/to/month-data-directory
 ~~~
 
 比如
 
 ~~~python
-python3 /path/to/stat-chba.py /path/to/6月
+python /path/to/stat-chba.py /path/to/6月
 ~~~
 
 ## 从每月数据的目录下启动（Windows）
