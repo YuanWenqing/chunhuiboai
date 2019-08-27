@@ -22,7 +22,8 @@ class Transaction:
         self.biz_kind = l[10]
         self.remark = l[11]
         l = self.remark.split('=')
-        self.person = l[2] if len(l) == 3 else None
+        self.project = l[0] if len(l) > 0 else ""
+        self.person = l[2] if len(l) == 3 else ""
 
     def __str__(self):
         line = ''
@@ -32,8 +33,9 @@ class Transaction:
 
 
 class PeriodStat:
-    def __init__(self, period):
+    def __init__(self, period, project):
         self.period = period
+        self.project = project
         self.persons = set()
         self.transaction_count = 0
         self.sum_amount = 0.
@@ -104,13 +106,16 @@ persons = dict()
 
 for t in transactions:
     m = t.time[:7]
-    if m not in months:
-        months[m] = PeriodStat(m)
-    m_stat = months[m]
+    p = t.project
+    k = '%s-%s' % (m, p)
+    if k not in months:
+        months[k] = PeriodStat(m, p)
+    m_stat = months[k]
     d = t.time[:10]
-    if d not in dates:
-        dates[d] = PeriodStat(d)
-    d_stat = dates[d]
+    k = '%s-%s' % (d, p)
+    if k not in dates:
+        dates[k] = PeriodStat(d, p)
+    d_stat = dates[k]
     p = t.person
     k = '%s-%s' % (p, m)
     if k not in persons:
@@ -136,22 +141,22 @@ if not os.path.exists(outdir):
 outf = os.path.join(outdir, 'months.csv')
 print("* write to %s" % outf)
 with file(outf, mode='w') as writer:
-    writer.write("month,persons,transactions,amount\n")
+    writer.write("month,project,persons,transactions,amount\n")
     keys = list(months.keys())
     keys.sort()
     for k in keys:
         m = months[k]
-        writer.write("%s,%d,%d,%.3f\n" % (m.period, len(m.persons), m.transaction_count, m.sum_amount))
+        writer.write("%s,%s,%d,%d,%.3f\n" % (m.period, m.project, len(m.persons), m.transaction_count, m.sum_amount))
 
 outf = os.path.join(outdir, 'dates.csv')
 print("* write to %s" % outf)
 with file(outf, mode='w') as writer:
-    writer.write("date,persons,transactions,amount\n")
+    writer.write("date,project,persons,transactions,amount\n")
     keys = list(dates.keys())
     keys.sort()
     for k in keys:
         d = dates[k]
-        writer.write("%s,%d,%d,%.3f\n" % (d.period, len(d.persons), d.transaction_count, d.sum_amount))
+        writer.write("%s,%s,%d,%d,%.3f\n" % (d.period, d.project, len(d.persons), d.transaction_count, d.sum_amount))
 
 outf = os.path.join(outdir, 'persons.csv')
 print("* write to %s" % outf)
