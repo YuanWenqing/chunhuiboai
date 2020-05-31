@@ -44,6 +44,8 @@ class PeriodStat:
         return '%s\tpersons=%d, transcations=%d, amount=%f' % (
             self.period, len(self.persons), self.transaction_count, self.sum_amount)
 
+    def csvLine(self):
+        return "%s,%s,%d,%d,%.3f\n" % (self.period, self.project, len(self.persons), self.transaction_count, self.sum_amount)
 
 class PersonDonation:
     def __init__(self, name, month):
@@ -56,36 +58,102 @@ class PersonDonation:
         return '%s\ttranscations=%d, amount=%f' % (
             self.name, self.transaction_count, self.donation)
 
+    def csvLine(self):
+        return "%s,%s,%d,%.3f\n" % (self.name, self.month, self.transaction_count, self.donation)
 
-def read_details(csvfile):
-    print('* reading %s' % csvfile)
-    transactions = []
-    sepline = False
-    begline = False
-    for line in file(csvfile):
-        if not sepline:
-            if '#----------' in line:
-                sepline = True
-            continue
-        elif not begline:
-            begline = True
-            continue
-        else:
-            if '#----------' in line:
-                # ending
-                break
-            o = Transaction(line)
-            transactions.append(o)
-    return transactions
+class Stat:
+    def __init__(self, outdir):
+        self.outdir = outdir
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        self.months = dict()
+        self.dates = dict()
+        self.persons = dict()
+
+    def onTransaction(self, t):
+        m = t.time[:7]
+        p = t.project
+        k = '%s-%s' % (m, p)
+        if k not in self.months:
+            self.months[k] = PeriodStat(m, p)
+        m_stat = self.months[k]
+        d = t.time[:10]
+        k = '%s-%s' % (d, p)
+        if k not in self.dates:
+            self.dates[k] = PeriodStat(d, p)
+        d_stat = self.dates[k]
+        p = t.person
+        k = '%s-%s' % (p, m)
+        if k not in self.persons:
+            self.persons[k] = PersonDonation(p, m)
+        p_stat = self.persons[k]
+
+        # person
+        m_stat.persons.add(p)
+        d_stat.persons.add(p)
+        # transaction
+        m_stat.transaction_count += 1
+        m_stat.sum_amount += t.income_account
+        d_stat.transaction_count += 1
+        d_stat.sum_amount += t.income_account
+        p_stat.transaction_count += 1
+        p_stat.donation += t.income_account
+
+    def handleDetailsCsv(self, csvfile):
+        print('* reading %s' % csvfile)
+        sepline = False
+        begline = False
+        for line in file(csvfile):
+            if not sepline:
+                if '#----------' in line:
+                    sepline = True
+                continue
+            elif not begline:
+                begline = True
+                continue
+            else:
+                if '#----------' in line:
+                    # ending
+                    break
+                t = Transaction(line)
+                self.onTransaction(t)
+
+    def output(self):
+        print("> output: ")
+        outf = os.path.join(self.outdir, 'months.csv')
+        print("* write to %s" % outf)
+        with file(outf, mode='w') as writer:
+            writer.write("month,project,persons,transactions,amount\n")
+            self._writeFile(writer, self.months)
+
+        outf = os.path.join(self.outdir, 'dates.csv')
+        print("* write to %s" % outf)
+        with file(outf, mode='w') as writer:
+            writer.write("date,project,persons,transactions,amount\n")
+            self._writeFile(writer, self.dates)
+
+        outf = os.path.join(self.outdir, 'persons.csv')
+        print("* write to %s" % outf)
+        with file(outf, mode='w') as writer:
+            writer.write("person,month,transactions,amount\n")
+            self._writeFile(writer, self.persons)
+
+    def _writeFile(self, writer, stat_d):
+        keys = list(stat_d.keys())
+        keys.sort()
+        for k in keys:
+            v = stat_d[k]
+            writer.write(v.csvLine())
 
 
 indir = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+
+stat = Stat(os.path.join(indir, outname))
 
 subdirs = os.listdir(indir)
 subdirs = [d for d in subdirs if d.find("_") == 8]
 subdirs.sort()
 
-transactions = []
 for sub in subdirs:
     if sub == outname:
         continue
@@ -98,72 +166,6 @@ for sub in subdirs:
         if '(' in f and ')' in f:
             continue
         csvfile = os.path.join(sub, f)
-        transactions.extend(read_details(csvfile))
+        stat.handleDetailsCsv(csvfile)
 
-months = dict()
-dates = dict()
-persons = dict()
-
-for t in transactions:
-    m = t.time[:7]
-    p = t.project
-    k = '%s-%s' % (m, p)
-    if k not in months:
-        months[k] = PeriodStat(m, p)
-    m_stat = months[k]
-    d = t.time[:10]
-    k = '%s-%s' % (d, p)
-    if k not in dates:
-        dates[k] = PeriodStat(d, p)
-    d_stat = dates[k]
-    p = t.person
-    k = '%s-%s' % (p, m)
-    if k not in persons:
-        persons[k] = PersonDonation(p, m)
-    p_stat = persons[k]
-
-    # person
-    m_stat.persons.add(p)
-    d_stat.persons.add(p)
-    # transaction
-    m_stat.transaction_count += 1
-    m_stat.sum_amount += t.income_account
-    d_stat.transaction_count += 1
-    d_stat.sum_amount += t.income_account
-    p_stat.transaction_count += 1
-    p_stat.donation += t.income_account
-
-print("> output: ")
-outdir = os.path.join(indir, outname)
-if not os.path.exists(outdir):
-    os.makedirs(outdir)
-
-outf = os.path.join(outdir, 'months.csv')
-print("* write to %s" % outf)
-with file(outf, mode='w') as writer:
-    writer.write("month,project,persons,transactions,amount\n")
-    keys = list(months.keys())
-    keys.sort()
-    for k in keys:
-        m = months[k]
-        writer.write("%s,%s,%d,%d,%.3f\n" % (m.period, m.project, len(m.persons), m.transaction_count, m.sum_amount))
-
-outf = os.path.join(outdir, 'dates.csv')
-print("* write to %s" % outf)
-with file(outf, mode='w') as writer:
-    writer.write("date,project,persons,transactions,amount\n")
-    keys = list(dates.keys())
-    keys.sort()
-    for k in keys:
-        d = dates[k]
-        writer.write("%s,%s,%d,%d,%.3f\n" % (d.period, d.project, len(d.persons), d.transaction_count, d.sum_amount))
-
-outf = os.path.join(outdir, 'persons.csv')
-print("* write to %s" % outf)
-with file(outf, mode='w') as writer:
-    writer.write("person,month,transactions,amount\n")
-    keys = list(persons.keys())
-    keys.sort()
-    for k in keys:
-        p = persons[k]
-        writer.write("%s,%s,%d,%.3f\n" % (p.name, p.month, p.transaction_count, p.donation))
+stat.output()
